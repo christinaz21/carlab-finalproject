@@ -22,8 +22,8 @@ def turnOffStepper():
     
 atexit.register(turnOffStepper)
 
-right = Raspi_MotorHAT.BACKWARD
-left = Raspi_MotorHAT.FORWARD
+right = Raspi_MotorHAT.FORWARD
+left = Raspi_MotorHAT.BACKWARD
 myStepper = mh.getStepper(200,1)
 myStepper.setSpeed(90)
 turntable = mh.getStepper(200, 2)
@@ -36,17 +36,18 @@ senseFlame = False
 sweeping = False
 flame_sensor = InputDevice(17)
 
+
 def moveRight(note):
     global position
     print("MOVING RIGHT")
-    myStepper.step(one_note*(note), left, Raspi_MotorHAT.SINGLE)
-    time.sleep(0.5)
+    myStepper.step(one_note*(note), right, Raspi_MotorHAT.SINGLE)
+    time.sleep(0.1)
     turnOffStepper()
     position += one_note*(note)
     
     
 def moveLeft(note):
-    myStepper.step(one_note*(note), right, Raspi_MotorHAT.SINGLE)
+    myStepper.step(one_note*(note), left, Raspi_MotorHAT.SINGLE)
     time.sleep(1)
     turnOffStepper()
 
@@ -54,13 +55,13 @@ def moveLeft(note):
 def goHome():
     global position
     print("GOING HOME")
-    myStepper.step(position, right, Raspi_MotorHAT.SINGLE)
+    myStepper.step(position, left, Raspi_MotorHAT.SINGLE)
     time.sleep(1)
     turnOffStepper()
     facingRightDirection = False
     
 def turn180():
-    turntable.step(105, left, Raspi_MotorHAT.SINGLE)
+    turntable.step(105, right, Raspi_MotorHAT.SINGLE)
     turnOffStepper()
 
 
@@ -78,10 +79,16 @@ fig, ax = plt.subplots()
 heatmap = ax.imshow(np.zeros((24,32)), cmap = 'hsv', vmin = 20, vmax = 40)
 plt.colorbar(heatmap)
 
-def sweep():
+def sweep(facingRightDirection):
     global sweeping
     global position
     global fireDetected
+    #global averageH
+    #print(averageH)
+    #if(fireDetected and averageH >5):
+    #    print("WRONG DIR")
+    #    turntable.step(105, right, Raspi_MotorHAT.SINGLE)
+    #    turnOffStepper()
     counter = 0
     print("in sweep")
     while(not senseFlame):
@@ -91,6 +98,19 @@ def sweep():
         moveRight(1)
         if not flame_sensor.is_active:
             print("detected")
+            if(facingRightDirection):
+                turntable.step(15, right, Raspi_MotorHAT.SINGLE)
+                turnOffStepper()
+                print("BLOWINGGGG")
+                time.sleep(1)
+                turntable.step(15, left, Raspi_MotorHAT.SINGLE)
+            else:
+                turntable.step(15, left, Raspi_MotorHAT.SINGLE)
+                turnOffStepper()
+                print("BLOWINGGGG")
+                time.sleep(1)
+                turntable.step(15, right, Raspi_MotorHAT.SINGLE)
+
             break
         time.sleep(0.5)
     goHome()
@@ -125,19 +145,29 @@ def read_mlx90640():
     if(count != 0):
         averageH = averageH / count
     
+    print(averageH)
     #Code to simulate facing forward or backward stepper movement
-    if(fireDetected and averageH > 8):
+    if(fireDetected and averageH < 5):
         facingRightDirection = True
+    else:
+        facingRightDirection = False
     
     if(fireDetected and not facingRightDirection):
-        #turn180()
-        facingRightDirection = True
+        facingRightDirection = False
+        turn180()
+        print("Sleeping")
+        time.sleep(5)
+        print("awake")
+        #facingRightDirection = True
         
     if(fireDetected and not sweeping):
         print("Begin sweeping!")
         #sweeping = True
-        sweep()
-        
+        sweep(facingRightDirection)
+        if(not facingRightDirection):
+            turntable.step(105, left, Raspi_MotorHAT.SINGLE)
+            turnOffStepper()
+            facingRightDirection = False
     
     print(fireDetected)
     return np.array(frame)
