@@ -37,7 +37,7 @@ try:
     myStepper.setSpeed(90)
     turntable = mh.getStepper(200, 2)
     turntable.setSpeed(90)
-    one_note = 112
+    one_note = 105
     position = 0
     fireDetected = False
     facingRightDirection = False
@@ -50,7 +50,7 @@ try:
         global position
         print("MOVING RIGHT")
         myStepper.step(one_note*(note), right, Raspi_MotorHAT.SINGLE)
-        time.sleep(0.1)
+        time.sleep(0.05)
         turnOffStepper()
         position += one_note*(note)
         
@@ -110,22 +110,22 @@ try:
             if not flame_sensor.is_active:
                 print("detected")
                 if(facingRightDirection):
-                    turntable.step(15, right, Raspi_MotorHAT.SINGLE)
+                    turntable.step(23, right, Raspi_MotorHAT.SINGLE)
                     turnOffStepper()
                     blow()
                     print("BLOWINGGGG")
                     time.sleep(1)
-                    turntable.step(15, left, Raspi_MotorHAT.SINGLE)
+                    turntable.step(23, left, Raspi_MotorHAT.SINGLE)
                 else:
-                    turntable.step(15, left, Raspi_MotorHAT.SINGLE)
+                    turntable.step(21, left, Raspi_MotorHAT.SINGLE)
                     turnOffStepper()
                     blow()
                     print("BLOWINGGGG")
                     time.sleep(1)
-                    turntable.step(15, right, Raspi_MotorHAT.SINGLE)
+                    turntable.step(21, right, Raspi_MotorHAT.SINGLE)
 
                 break
-            time.sleep(0.5)
+            time.sleep(0.25)
         goHome()
         position = 0
         sweeping = False
