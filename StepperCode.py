@@ -15,8 +15,8 @@ def turnOffStepper():
     
 atexit.register(turnOffStepper)
 
-right = Raspi_MotorHAT.BACKWARD
-left = Raspi_MotorHAT.FORWARD
+right = Raspi_MotorHAT.FORWARD
+left = Raspi_MotorHAT.BACKWARD
 myStepper = mh.getStepper(200,1)
 myStepper.setSpeed(90)
 turntable = mh.getStepper(200, 2)
@@ -42,8 +42,11 @@ def moveLeft(note):
     
     
 try:
-    moveRight(1)
-    turntable.step(105, left, Raspi_MotorHAT.SINGLE)
+    #moveRight(1)
+    
+    turntable.step(105, left, Raspi_MotorHAT.DOUBLE)
+    time.sleep(1)
+    turntable.step(105, right, Raspi_MotorHAT.DOUBLE)
     turnOffStepper()
     #moveRight(4)
     
